@@ -4,11 +4,11 @@ Projeto desenvolvido em Java com Spring Boot para a missão **Project Reviewer**
 
 ## Sobre o projeto
 
-O **Project Reviewer** é uma API que simula um agente de IA para correção de trabalhos de alunos.
+O **Project Reviewer** é uma API que usa **Spring AI com Ollama** para corrigir trabalhos de alunos.
 
-A aplicação recebe os dados do aluno e a descrição do trabalho entregue, gera uma nota automática, cria um feedback de avaliação e salva essas informações em um banco de dados H2.
+O sistema recebe o nome do aluno, RM e a descrição do trabalho. Depois, a IA gera uma nota e um feedback. Essas informações são salvas no banco de dados H2.
 
-## Tecnologias utilizadas
+## Tecnologias usadas
 
 - Java 17
 - Spring Boot
@@ -16,6 +16,7 @@ A aplicação recebe os dados do aluno e a descrição do trabalho entregue, ger
 - Spring Data JPA
 - H2 Database
 - Spring AI
+- Ollama
 - Maven
 
 ## Como rodar o projeto
@@ -32,21 +33,43 @@ git clone https://github.com/GabrielNakamura123456/project-reviewer.git
 cd project-reviewer/project-reviewer
 ```
 
-### 3. Rodar a aplicação
+### 3. Instalar o Ollama
 
-No terminal, execute:
+Baixe e instale o Ollama:
+
+```text
+https://ollama.com/download
+```
+
+Depois, no terminal, teste se instalou:
+
+```bash
+ollama --version
+```
+
+### 4. Baixar o modelo da IA
+
+No terminal, rode:
+
+```bash
+ollama pull llama3.2:1b
+```
+
+### 5. Rodar o projeto
+
+Com o Ollama instalado, rode o projeto:
 
 ```bash
 mvn spring-boot:run
 ```
 
-Ou abra o projeto no IntelliJ e rode a classe:
+Ou abra no IntelliJ e execute a classe:
 
 ```text
 ProjectReviewerApplication
 ```
 
-### 4. Verificar se a API está funcionando
+### 6. Testar se a API está funcionando
 
 Abra no navegador:
 
@@ -54,23 +77,17 @@ Abra no navegador:
 http://localhost:8080/correcoes
 ```
 
-Se aparecer:
+Se aparecer `[]`, significa que a API está funcionando e ainda não tem nenhuma correção salva.
 
-```json
-[]
-```
+## Como cadastrar uma correção
 
-significa que a API está funcionando e o banco ainda está vazio.
-
-## Como testar o cadastro de correção
-
-Com a aplicação rodando, execute no PowerShell:
+Com o projeto rodando, execute este comando no PowerShell:
 
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/correcoes" -Method POST -ContentType "application/json" -Body '{"nomeAluno":"Gabriel Nakamura","rm":"560671","descricaoTrabalho":"O aluno criou uma API Java com Spring Boot usando controller, service, repository, banco H2 e documentacao no README."}'
+Invoke-RestMethod -Uri "http://localhost:8080/correcoes" -Method POST -ContentType "application/json" -Body '{"nomeAluno":"Gabriel Nakamura","rm":"560671","descricaoTrabalho":"O aluno criou uma API Java com Spring Boot usando controller, service, repository, banco H2, Spring AI com Ollama e documentacao no README."}'
 ```
 
-A API deve retornar uma correção com `id`, `nota`, `feedback` e `dataCorrecao`.
+A API vai retornar a correção com nota, feedback e data.
 
 Depois acesse novamente:
 
@@ -78,7 +95,7 @@ Depois acesse novamente:
 http://localhost:8080/correcoes
 ```
 
-Agora a correção cadastrada deverá aparecer salva.
+A correção cadastrada deverá aparecer salva.
 
 ## Endpoints
 
@@ -88,26 +105,10 @@ Agora a correção cadastrada deverá aparecer salva.
 POST /correcoes
 ```
 
-Exemplo de JSON:
-
-```json
-{
-  "nomeAluno": "Gabriel Nakamura",
-  "rm": "560671",
-  "descricaoTrabalho": "O aluno criou uma API Java com Spring Boot usando controller, service, repository, banco H2 e documentacao no README."
-}
-```
-
 ### Listar correções
 
 ```http
 GET /correcoes
-```
-
-Exemplo:
-
-```text
-http://localhost:8080/correcoes
 ```
 
 ### Buscar correção por ID
@@ -122,9 +123,7 @@ Exemplo:
 http://localhost:8080/correcoes/1
 ```
 
-## Banco de dados H2
-
-O projeto utiliza banco H2 em memória.
+## Banco H2
 
 Console do H2:
 
@@ -132,7 +131,7 @@ Console do H2:
 http://localhost:8080/h2-console
 ```
 
-Configurações para acessar o H2:
+Configuração:
 
 ```text
 JDBC URL: jdbc:h2:mem:projectreviewer
@@ -140,28 +139,16 @@ User: sa
 Password: deixar vazio
 ```
 
-## Estrutura do projeto
+## Spring AI com Ollama
 
-```text
-src/main/java/br/com/fiap/projectreviewer
-├── controller
-│   └── CorrecaoController.java
-├── dto
-│   └── CorrecaoRequest.java
-├── model
-│   └── Correcao.java
-├── repository
-│   └── CorrecaoRepository.java
-├── service
-│   └── CorrecaoService.java
-└── ProjectReviewerApplication.java
+O projeto usa o `ChatClient` do Spring AI para enviar a descrição do trabalho para o modelo local do Ollama.
+
+Configuração usada no `application.properties`:
+
+```properties
+spring.ai.ollama.base-url=http://localhost:11434
+spring.ai.ollama.chat.options.model=llama3.2:1b
 ```
-
-## Observação sobre Spring AI
-
-O projeto possui a dependência do **Spring AI** configurada no `pom.xml`.
-
-Nesta versão, a correção roda em modo demo para evitar custos com API externa. O sistema simula o comportamento de um agente avaliador usando critérios automáticos.
 
 ## Autor
 
