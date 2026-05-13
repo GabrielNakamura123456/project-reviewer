@@ -1,0 +1,8 @@
+POST http://localhost:8080/correcoes
+Content-Type: application/json
+
+{
+  "nomeAluno": "Gabriel Nakamura",
+  "rm": "560671",
+  "descricaoTrabalho": "O aluno criou uma API Java com Spring Boot usando controller, service, repository, banco H2 e documentação no README."
+}
